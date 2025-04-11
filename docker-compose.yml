@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  tusky-mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder # Use the builder stage during development
+    container_name: tusky-mcp-server
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src
+      - ./openapi:/app/openapi
+      - ./config:/app/config
+      - ./data:/app/data
+      - node_modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+      - TUSKY_API_KEY=${TUSKY_API_KEY}
+      - LOG_LEVEL=debug
+    command: npm run dev
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+
+volumes:
+  node_modules:
